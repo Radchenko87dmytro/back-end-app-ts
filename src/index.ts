@@ -136,6 +136,14 @@ const db = {
     { id: 4, title: "devops" },
   ],
 };
+const products = [
+  { id: 1, title: "tomato" },
+  { id: 2, title: "orange" },
+];
+const addresses = [
+  { id: 1, value: "Independence 21" },
+  { id: 2, value: "Salers 11" },
+];
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello IT !!!");
@@ -145,11 +153,25 @@ app.get("/", (req: Request, res: Response) => {
 app.get("/courses", (req: Request, res: Response) => {
   let foundCourses = db.courses;
   if (req.query.title) {
-    foundCourses = foundCourses = db.courses.filter(
-      (c) => c.title.indexOf(req.query.title as string) > -1
+    res.send(
+      db.courses.filter((c) => c.title.indexOf(req.query.title as string) > -1)
     );
+  } else {
+    res.send(foundCourses);
   }
-  res.status(HTTP_STATUSES.OK_200).json(foundCourses);
+  //res.status(HTTP_STATUSES.OK_200).json(foundCourses);
+});
+
+app.get("/products", (req: Request, res: Response) => {
+  let foundProducts = products;
+  if (req.query.title) {
+    res.send(
+      products.filter((p) => p.title.indexOf(req.query.title as string) > -1)
+    );
+  } else {
+    res.send(foundProducts);
+  }
+  res.status(HTTP_STATUSES.OK_200).json(foundProducts);
 });
 
 app.get("/courses/:id", (req: Request, res: Response) => {
@@ -159,6 +181,15 @@ app.get("/courses/:id", (req: Request, res: Response) => {
     return;
   }
   res.json(foundCourse);
+});
+
+app.get("/products/:id", (req: Request, res: Response) => {
+  const product = products.find((p) => p.id === +req.params.id);
+  if (!product) {
+    res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+    return;
+  }
+  res.json(product);
 });
 
 app.post("/courses", (req: Request, res: Response) => {
@@ -178,10 +209,32 @@ app.post("/courses", (req: Request, res: Response) => {
     .json({ message: "New cours created", data: createdCourse });
 });
 
-app.delete("/courses/:id", (req: Request, res: Response) => {
-  db.courses = db.courses.filter((c) => c.id !== +req.params.id);
+app.post("/products", (req: Request, res: Response) => {
+  if (!req.body.title) {
+    res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400);
+    return;
+  }
 
-  res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+  const newProduct = {
+    id: +new Date(),
+    title: req.body.title,
+  };
+  products.push(newProduct);
+
+  res
+    .status(HTTP_STATUSES.CREATED_201)
+    .json({ message: "New product created", data: newProduct });
+});
+
+app.delete("/products/:id", (req: Request, res: Response) => {
+  for (let i = 0; i < products.length; i++) {
+    if (products[i].id === +req.params.id) {
+      products.splice(i, 1);
+      res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+      return;
+    }
+  }
+  res.send(404);
 });
 
 app.put("/courses/:id", (req: Request, res: Response) => {
@@ -199,6 +252,23 @@ app.put("/courses/:id", (req: Request, res: Response) => {
   foundCourse.title = req.body.title;
 
   res.status(HTTP_STATUSES.OK_200).json(foundCourse);
+});
+
+app.put("/products/:id", (req: Request, res: Response) => {
+  if (!req.body.title) {
+    res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400);
+    return;
+  }
+
+  let product = products.find((c) => c.id === +req.params.id);
+  if (!product) {
+    res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+    return;
+  }
+
+  product.title = req.body.title;
+
+  res.status(HTTP_STATUSES.OK_200).json(product);
 });
 
 app.listen(port, () => {
