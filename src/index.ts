@@ -112,14 +112,14 @@ import cors from "cors";
 //const express = require("express");
 
 const port = process.env.Port || 5000;
-const app: Express = express();
+export const app: Express = express();
 
 const corsMiddleware = cors();
 app.use(corsMiddleware);
 const jsonBodyMiddleware = bodyParser.json();
 app.use(jsonBodyMiddleware);
 
-const HTTP_STATUSES = {
+export const HTTP_STATUSES = {
   OK_200: 200,
   CREATED_201: 201,
   NO_CONTENT_204: 204,
@@ -269,6 +269,11 @@ app.put("/products/:id", (req: Request, res: Response) => {
   product.title = req.body.title;
 
   res.status(HTTP_STATUSES.OK_200).json(product);
+});
+
+app.delete("/__test__/data", (req: Request, res: Response) => {
+  db.courses = [];
+  res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
 });
 
 app.listen(port, () => {
