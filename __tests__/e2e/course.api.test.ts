@@ -20,5 +20,25 @@ describe("/course", () => {
       .post("/courses")
       .send({ title: "" })
       .expect(HTTP_STATUSES.BAD_REQUEST_400);
+
+    await request(app).get("/courses").expect(HTTP_STATUSES.OK_200, []);
   });
+
+  // it("should create course with correct input data", async () => {
+  //   const createResponse = await request(app)
+  //     .post("/courses")
+  //     .send({ title: "new course" });
+  //   // .expect(HTTP_STATUSES.CREATED_201);
+
+  //   const createdCourse = createResponse.body;
+
+  //   // expect(createdCourse).toEqual({
+  //   //   // id: expect.any(Number),
+  //   //   title: "new course",
+  //   // });
+
+  //   await request(app)
+  //     .get("/courses")
+  //     .expect(HTTP_STATUSES.OK_200, [createdCourse]);
+  // });
 });

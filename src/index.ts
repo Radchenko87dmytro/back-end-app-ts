@@ -108,6 +108,15 @@
 import express, { Request, Response, Express } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
+import {
+  RequestWithBody,
+  RequestWithParams,
+  RequestWithParamsAndBody,
+  RequestWithQuery,
+} from "./types";
+import { CourseCreateModel } from "./models/CourseCreateModel";
+import { CourseUpdateModel } from "./models/CourseUpdateModel";
+import { CoursesQueryModel } from "./models/GetCourseQueryModel";
 //import  {  } from "express";
 //const express = require("express");
 
@@ -128,7 +137,13 @@ export const HTTP_STATUSES = {
   NOT_FOUND_404: 404,
 };
 
-const db = {
+type CourseType = {
+  id: number;
+  title: string;
+  //message?: string
+};
+
+const db: { courses: CourseType[] } = {
   courses: [
     { id: 1, title: "front-end" },
     { id: 2, title: "back-end" },
@@ -136,10 +151,12 @@ const db = {
     { id: 4, title: "devops" },
   ],
 };
+
 const products = [
   { id: 1, title: "tomato" },
   { id: 2, title: "orange" },
 ];
+
 const addresses = [
   { id: 1, value: "Independence 21" },
   { id: 2, value: "Salers 11" },
@@ -150,18 +167,91 @@ app.get("/", (req: Request, res: Response) => {
   // res.status(200).json({message: "Got post", data: })
 });
 
-app.get("/courses", (req: Request, res: Response) => {
-  let foundCourses = db.courses;
-  if (req.query.title) {
-    res.send(
-      db.courses.filter((c) => c.title.indexOf(req.query.title as string) > -1)
-    );
-  } else {
-    res.send(foundCourses);
-  }
-  //res.status(HTTP_STATUSES.OK_200).json(foundCourses);
-});
+app.get(
+  "/courses",
+  (req: RequestWithQuery<CoursesQueryModel>, res: Response<CourseType[]>) => {
+    let foundCourses = db.courses;
 
+    if (req.query.title) {
+      res.send(
+        (foundCourses = foundCourses.filter(
+          (c) => c.title.indexOf(req.query.title as string) > -1
+        ))
+      );
+    } else {
+      res.send(foundCourses);
+    }
+    //res.status(HTTP_STATUSES.OK_200).json(foundCourses);
+  }
+);
+
+app.get(
+  "/courses/:id",
+  (req: RequestWithParams<{ id: string }>, res: Response) => {
+    const foundCourse = db.courses.find((c) => c.id === +req.params.id);
+    if (!foundCourse) {
+      res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+      return;
+    }
+    res.json(foundCourse);
+  }
+);
+
+app.post(
+  "/courses",
+  (
+    req: RequestWithBody<CourseCreateModel>,
+    res: Response<{ data: CourseType; message: string }>
+  ) => {
+    if (!req.body.title) {
+      res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400);
+      return;
+    }
+
+    const createdCourse = {
+      id: +new Date(),
+      title: req.body.title,
+    };
+    db.courses.push(createdCourse);
+    console.log(createdCourse);
+    res
+      .status(HTTP_STATUSES.CREATED_201)
+      .json({ message: "New cours created", data: createdCourse });
+  }
+);
+
+app.delete(
+  "courses/:id",
+  (req: RequestWithParams<{ id: string }>, res: Response) => {
+    db.courses = db.courses.filter((c) => c.id !== +req.params.id);
+    res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+  }
+);
+
+app.put(
+  "/courses/:id",
+  (
+    req: RequestWithParamsAndBody<{ id: string }, CourseUpdateModel>,
+    res: Response
+  ) => {
+    if (!req.body.title) {
+      res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400);
+      return;
+    }
+
+    const foundCourse = db.courses.find((c) => c.id === +req.params.id);
+    if (!foundCourse) {
+      res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+      return;
+    }
+
+    foundCourse.title = req.body.title;
+
+    res.status(HTTP_STATUSES.OK_200).json(foundCourse);
+  }
+);
+
+////////////////////////////////////////////////////////////
 app.get("/products", (req: Request, res: Response) => {
   let foundProducts = products;
   if (req.query.title) {
@@ -174,15 +264,6 @@ app.get("/products", (req: Request, res: Response) => {
   res.status(HTTP_STATUSES.OK_200).json(foundProducts);
 });
 
-app.get("/courses/:id", (req: Request, res: Response) => {
-  const foundCourse = db.courses.find((c) => c.id === +req.params.id);
-  if (!foundCourse) {
-    res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-    return;
-  }
-  res.json(foundCourse);
-});
-
 app.get("/products/:id", (req: Request, res: Response) => {
   const product = products.find((p) => p.id === +req.params.id);
   if (!product) {
@@ -190,23 +271,6 @@ app.get("/products/:id", (req: Request, res: Response) => {
     return;
   }
   res.json(product);
-});
-
-app.post("/courses", (req: Request, res: Response) => {
-  if (!req.body.title) {
-    res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400);
-    return;
-  }
-
-  const createdCourse = {
-    id: +new Date(),
-    title: req.body.title,
-  };
-  db.courses.push(createdCourse);
-  console.log(createdCourse);
-  res
-    .status(HTTP_STATUSES.CREATED_201)
-    .json({ message: "New cours created", data: createdCourse });
 });
 
 app.post("/products", (req: Request, res: Response) => {
@@ -235,23 +299,6 @@ app.delete("/products/:id", (req: Request, res: Response) => {
     }
   }
   res.send(404);
-});
-
-app.put("/courses/:id", (req: Request, res: Response) => {
-  if (!req.body.title) {
-    res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400);
-    return;
-  }
-
-  const foundCourse = db.courses.find((c) => c.id === +req.params.id);
-  if (!foundCourse) {
-    res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-    return;
-  }
-
-  foundCourse.title = req.body.title;
-
-  res.status(HTTP_STATUSES.OK_200).json(foundCourse);
 });
 
 app.put("/products/:id", (req: Request, res: Response) => {
