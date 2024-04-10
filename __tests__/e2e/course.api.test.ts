@@ -1,5 +1,6 @@
 import request from "supertest";
 import { HTTP_STATUSES, app } from "../../src";
+import { CourseCreateModel } from "../../src/models/CourseCreateModel";
 
 describe("/course", () => {
   beforeAll(async () => {
@@ -16,9 +17,10 @@ describe("/course", () => {
   });
 
   it("shouldn't create course with incorrect input data", async () => {
+    const data: CourseCreateModel = { title: "it-course" };
     await request(app)
       .post("/courses")
-      .send({ title: "" })
+      .send(data)
       .expect(HTTP_STATUSES.BAD_REQUEST_400);
 
     await request(app).get("/courses").expect(HTTP_STATUSES.OK_200, []);
@@ -41,4 +43,24 @@ describe("/course", () => {
   //     .get("/courses")
   //     .expect(HTTP_STATUSES.OK_200, [createdCourse]);
   // });
+
+  let createdCourse1: any = null;
+  it("should create course with correct input data", async () => {
+    const data: CourseCreateModel = { title: "it-course" };
+    const createResponse = await request(app)
+      .post("/courses")
+      .send(data)
+      .expect(HTTP_STATUSES.CREATED_201);
+
+    const createdCourse1 = createResponse.body;
+
+    expect(createdCourse1).toEqual({
+      id: expect.any(Number),
+      title: "it-course",
+    });
+
+    await request(app)
+      .get("/courses")
+      .expect(HTTP_STATUSES.OK_200, [createdCourse1]);
+  });
 });
