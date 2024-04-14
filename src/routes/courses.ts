@@ -1,5 +1,4 @@
-import { Express, Response } from "express";
-import { getCourseVievModel } from "./../app";
+import express, { Express, Response } from "express";
 import { CourseCreateModel } from "../models/CourseCreateModel";
 import { CourseUpdateModel } from "../models/CourseUpdateModel";
 import { CourseViewModel } from "../models/CourseViewModel";
@@ -12,19 +11,23 @@ import {
   RequestWithQuery,
 } from "../types";
 import { CourseType, DBType, db } from "../db/db";
+import { HTTP_STATUSES } from "../utils";
 
-export const HTTP_STATUSES = {
-  OK_200: 200,
-  CREATED_201: 201,
-  NO_CONTENT_204: 204,
 
-  BAD_REQUEST_400: 400,
-  NOT_FOUND_404: 404,
+
+export const getCourseVievModel = (dbCourse: CourseType): CourseViewModel => {
+  return {
+    id: dbCourse.id,
+    title: dbCourse.title,
+  };
 };
 
-export const addCoursesRoutes = (app: Express, db: DBType) => {
-  app.get(
-    "/courses",
+ 
+
+ export const getCoursesRouter = ( db: DBType) => {
+const router = express.Router()
+router.get(
+    "/",
     (
       req: RequestWithQuery<CoursesQueryModel>,
       res: Response<CourseViewModel[]>
@@ -44,8 +47,8 @@ export const addCoursesRoutes = (app: Express, db: DBType) => {
     }
   );
 
-  app.get(
-    "/courses/:id",
+  router.get(
+    "/:id",
     (
       req: RequestWithParams<URIParamsCourseIDModel>,
       res: Response<CourseViewModel>
@@ -59,8 +62,8 @@ export const addCoursesRoutes = (app: Express, db: DBType) => {
     }
   );
 
-  app.post(
-    "/courses",
+  router.post(
+    "/",
     (
       req: RequestWithBody<CourseCreateModel>,
       res: Response<CourseViewModel> //{ data: CourseViewModel; message: string }
@@ -83,16 +86,16 @@ export const addCoursesRoutes = (app: Express, db: DBType) => {
     }
   );
 
-  app.delete(
-    "courses/:id",
+  router.delete(
+    "/:id",
     (req: RequestWithParams<URIParamsCourseIDModel>, res: Response) => {
       db.courses = db.courses.filter((c) => c.id !== +req.params.id);
       res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
     }
   );
 
-  app.put(
-    "/courses/:id",
+  router.put(
+    "/:id",
     (
       req: RequestWithParamsAndBody<URIParamsCourseIDModel, CourseUpdateModel>,
       res: Response
@@ -113,4 +116,6 @@ export const addCoursesRoutes = (app: Express, db: DBType) => {
       res.status(HTTP_STATUSES.OK_200).json(foundCourse);
     }
   );
+
+  return router
 };

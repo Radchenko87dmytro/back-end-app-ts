@@ -2,27 +2,23 @@ import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import { CourseViewModel } from "./models/CourseViewModel";
-import { HTTP_STATUSES, addCoursesRoutes } from "./routes/courses";
+import { getCoursesRouter } from "./routes/courses";
 import { CourseType, db } from "./db/db";
-import { addTestsRoutes } from "./routes/tests";
+import { getTestsRouter } from "./routes/tests";
 
 export const app = express();
 
 const corsMiddleware = cors();
 app.use(corsMiddleware);
-const jsonBodyMiddleware = bodyParser.json();
+
+export const jsonBodyMiddleware = express.json();
+
 app.use(jsonBodyMiddleware);
 
-export const getCourseVievModel = (dbCourse: CourseType): CourseViewModel => {
-  return {
-    id: dbCourse.id,
-    title: dbCourse.title,
-  };
-};
+app.use("/courses", getCoursesRouter(db));
+app.use("/__test__", getTestsRouter(db));
 
-addCoursesRoutes(app, db);
-addTestsRoutes(app, db);
-
+////////////////////////////////////////////////
 // const products = [
 //   { id: 1, title: "tomato" },
 //   { id: 2, title: "orange" },
