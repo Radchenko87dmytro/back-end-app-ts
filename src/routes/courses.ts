@@ -13,8 +13,6 @@ import {
 import { CourseType, DBType, db } from "../db/db";
 import { HTTP_STATUSES } from "../utils";
 
-
-
 export const getCourseVievModel = (dbCourse: CourseType): CourseViewModel => {
   return {
     id: dbCourse.id,
@@ -22,11 +20,9 @@ export const getCourseVievModel = (dbCourse: CourseType): CourseViewModel => {
   };
 };
 
- 
-
- export const getCoursesRouter = ( db: DBType) => {
-const router = express.Router()
-router.get(
+export const getCoursesRouter = (db: DBType) => {
+  const router = express.Router();
+  router.get(
     "/",
     (
       req: RequestWithQuery<CoursesQueryModel>,
@@ -117,5 +113,5 @@ router.get(
     }
   );
 
-  return router
+  return router;
 };
