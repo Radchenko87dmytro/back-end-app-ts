@@ -1,24 +1,20 @@
 import { Request, Response, Router } from "express";
 import { app } from "../app";
 import { HTTP_STATUSES } from "../utils";
-
-const products = [
-  { id: 1, title: "tomato" },
-  { id: 2, title: "orange" },
-];
+import { productsRepository } from "../repositories/products-repository";
 
 export const productsRouter = Router({});
 
 productsRouter.get("/", (req: Request, res: Response) => {
-  let foundProducts = products;
-  if (req.query.title) {
-    res.send(
-      products.filter((p) => p.title.indexOf(req.query.title as string) > -1)
-    );
-  } else {
-    res.send(foundProducts);
-  }
-  res.status(HTTP_STATUSES.OK_200).json(foundProducts);
+  const foundProducts = productsRepository.findProducts(
+    req.query.title?.toString()
+  );
+  res.send(foundProducts);
+});
+
+productsRouter.post("/", (req: Request, res: Response) => {
+  const newProduct = productsRepository.createProduct(req.body.title);
+  res.status(201).send(newProduct);
 });
 
 productsRouter.get("/:id", (req: Request, res: Response) => {
