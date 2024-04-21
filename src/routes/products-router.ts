@@ -2,6 +2,7 @@ import { Request, Response, Router } from "express";
 import { app } from "../app";
 import { HTTP_STATUSES } from "../utils";
 import { productsRepository } from "../repositories/products-repository";
+import { title } from "process";
 
 export const productsRouter = Router({});
 
@@ -18,29 +19,25 @@ productsRouter.post("/", (req: Request, res: Response) => {
 });
 
 productsRouter.get("/:id", (req: Request, res: Response) => {
-  const product = products.find((p) => p.id === +req.params.id);
-  if (!product) {
-    res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-    return;
+  const product = productsRepository.getProductById(+req.params.id);
+  if (product) {
+    res.send(product);
+  } else {
+    res.send(404);
   }
-  res.json(product);
 });
 
-productsRouter.post("/", (req: Request, res: Response) => {
-  if (!req.body.title) {
-    res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400);
-    return;
+productsRouter.put("/:id", (req: Request, res: Response) => {
+  const isUpdated = productsRepository.updateProduct(
+    +req.params.id,
+    req.body.title
+  );
+  if (isUpdated) {
+    const product = productsRepository.findProductById(+req.params.id);
+    res.send(product);
+  } else {
+    res.send(404);
   }
-
-  const newProduct = {
-    id: +new Date(),
-    title: req.body.title,
-  };
-  products.push(newProduct);
-
-  res
-    .status(HTTP_STATUSES.CREATED_201)
-    .json({ message: "New product created", data: newProduct });
 });
 
 productsRouter.delete("/:id", (req: Request, res: Response) => {
@@ -52,21 +49,4 @@ productsRouter.delete("/:id", (req: Request, res: Response) => {
     }
   }
   res.send(404);
-});
-
-productsRouter.put("/:id", (req: Request, res: Response) => {
-  if (!req.body.title) {
-    res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400);
-    return;
-  }
-
-  let product = products.find((c) => c.id === +req.params.id);
-  if (!product) {
-    res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-    return;
-  }
-
-  product.title = req.body.title;
-
-  res.status(HTTP_STATUSES.OK_200).json(product);
 });

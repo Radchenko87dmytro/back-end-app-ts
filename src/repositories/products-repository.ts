@@ -21,4 +21,19 @@ export const productsRepository = {
     products.push(newProduct);
     return newProduct;
   },
+
+  getProductById(id: number) {
+    const product = products.find((p) => p.id === id);
+    return product;
+  },
+
+  updateProduct(id: number, title: string) {
+    let product = products.find((p) => p.id === id);
+    if (product) {
+      product.title = title;
+      return true;
+    } else {
+      return false;
+    }
+  },
 };
