@@ -13,6 +13,11 @@ export const productsRepository = {
     }
   },
 
+  findProductById(id: number) {
+    const product = products.find((p) => p.id === id);
+    return product;
+  },
+
   createProduct(title: string) {
     const newProduct = {
       id: +new Date(),
@@ -20,11 +25,6 @@ export const productsRepository = {
     };
     products.push(newProduct);
     return newProduct;
-  },
-
-  getProductById(id: number) {
-    const product = products.find((p) => p.id === id);
-    return product;
   },
 
   updateProduct(id: number, title: string) {
@@ -35,5 +35,16 @@ export const productsRepository = {
     } else {
       return false;
     }
+  },
+
+  deleteProduct(id: number) {
+    for (let i = 0; i < products.length; i++) {
+      if (products[i].id === id) {
+        products.splice(i, 1);
+
+        return true;
+      }
+    }
+    return false;
   },
 };

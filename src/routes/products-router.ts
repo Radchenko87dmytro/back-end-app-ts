@@ -19,7 +19,7 @@ productsRouter.post("/", (req: Request, res: Response) => {
 });
 
 productsRouter.get("/:id", (req: Request, res: Response) => {
-  const product = productsRepository.getProductById(+req.params.id);
+  const product = productsRepository.findProductById(+req.params.id);
   if (product) {
     res.send(product);
   } else {
@@ -41,12 +41,10 @@ productsRouter.put("/:id", (req: Request, res: Response) => {
 });
 
 productsRouter.delete("/:id", (req: Request, res: Response) => {
-  for (let i = 0; i < products.length; i++) {
-    if (products[i].id === +req.params.id) {
-      products.splice(i, 1);
-      res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
-      return;
-    }
+  const isDeleted = productsRepository.deleteProduct(+req.params.id);
+  if (isDeleted) {
+    res.send(204);
+  } else {
+    res.send(404);
   }
-  res.send(404);
 });
