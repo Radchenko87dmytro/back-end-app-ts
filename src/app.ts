@@ -10,20 +10,33 @@ import { productsRouter } from "./routes/products-router";
 import { addressesRouter } from "./routes/addresses-router";
 
 export const app = express();
+app.use(bodyParser());
 
-const authGuardMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  if (req.query.token === "123") {
-    next();
-  } else {
-    res.send(401);
-  }
-};
+// const authGuardMiddleware = (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   if (req.query.token === "123") {
+//     next();
+//   } else {
+//     res.send(401);
+//   }
+// };
 
-app.use(authGuardMiddleware);
+// let requestCounter = 0;
+
+// const requestCounterMiddleware = (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   requestCounter++;
+//   next();
+// };
+
+// //app.use(requestCounterMiddleware);
+// app.use(authGuardMiddleware);
 
 const corsMiddleware = cors();
 app.use(corsMiddleware);
@@ -36,17 +49,10 @@ app.use("/courses", getCoursesRouter(db));
 app.use("/__test__", getTestsRouter(db));
 app.use("/interesting", getInterestingRouter(db));
 
-//app.use("/products", productsRouter);
+app.use("/products", productsRouter);
 app.use("/addresses", addressesRouter);
 
-app.get(
-  "/products",
-  (req: Request, res: Response, next: NextFunction) => {
-    //req.blabla = "hello"
-    next();
-  },
-  (req: Request, res: Response) => {
-    //const blabla = req.blabla
-    res.send({ value: "blabla" });
-  }
-);
+// app.get("/products", (req: Request, res: Response) => {
+//   //const blabla = req.blabla
+//   res.send({ value: "blabla " });
+// });
