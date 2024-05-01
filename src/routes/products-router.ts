@@ -1,5 +1,10 @@
 import { Request, Response, Router } from "express";
-import { productsRepository } from "../repositories/products-repository";
+import {
+  ProductType,
+  productsRepository,
+} from "../repositories/products-in-memory-repository";
+//-db-repository
+//
 import { body, validationResult } from "express-validator";
 import { inputValidationMiddleware } from "../middlewares/input-validation-middleware";
 
@@ -14,8 +19,10 @@ productsRouter.post(
   "/",
   titleValidation,
   inputValidationMiddleware,
-  (req: Request, res: Response) => {
-    const newProduct = productsRepository.createProduct(req.body.title);
+  async (req: Request, res: Response) => {
+    const newProduct: ProductType = await productsRepository.createProduct(
+      req.body.title
+    );
     res.status(201).send(newProduct);
   }
 );
@@ -24,18 +31,18 @@ productsRouter.put(
   "/:id",
   titleValidation,
   inputValidationMiddleware,
-  (req: Request, res: Response) => {
+  async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const isUpdated = productsRepository.updateProduct(
+    const isUpdated = await productsRepository.updateProduct(
       +req.params.id,
       req.body.title
     );
     if (isUpdated) {
-      const product = productsRepository.findProductById(+req.params.id);
+      const product = await productsRepository.findProductById(+req.params.id);
       res.send(product);
     } else {
       res.send(404);
@@ -43,15 +50,16 @@ productsRouter.put(
   }
 );
 
-productsRouter.get("/", (req: Request, res: Response) => {
-  const foundProducts = productsRepository.findProducts(
+productsRouter.get("/", async (req: Request, res: Response) => {
+  const foundProducts: ProductType[] = await productsRepository.findProducts(
     req.query.title?.toString()
   );
+
   res.send(foundProducts);
 });
 
-productsRouter.get("/:id", (req: Request, res: Response) => {
-  const product = productsRepository.findProductById(+req.params.id);
+productsRouter.get("/:id", async (req: Request, res: Response) => {
+  const product = await productsRepository.findProductById(+req.params.id);
   if (product) {
     res.send(product);
   } else {
@@ -59,8 +67,8 @@ productsRouter.get("/:id", (req: Request, res: Response) => {
   }
 });
 
-productsRouter.delete("/:id", (req: Request, res: Response) => {
-  const isDeleted = productsRepository.deleteProduct(+req.params.id);
+productsRouter.delete("/:id", async (req: Request, res: Response) => {
+  const isDeleted = await productsRepository.deleteProduct(+req.params.id);
   if (isDeleted) {
     res.send(204);
   } else {

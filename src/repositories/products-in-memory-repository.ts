@@ -1,10 +1,15 @@
-const products = [
+export type ProductType = {
+  id: number;
+  title: string;
+};
+
+const products: ProductType[] = [
   { id: 1, title: "tomato" },
   { id: 2, title: "orange" },
 ];
 
 export const productsRepository = {
-  findProducts(title: string | null | undefined) {
+  async findProducts(title: string | null | undefined): Promise<ProductType[]> {
     if (title) {
       let foundProducts = products.filter((p) => p.title.indexOf(title) > -1);
       return foundProducts;
@@ -13,12 +18,16 @@ export const productsRepository = {
     }
   },
 
-  findProductById(id: number) {
+  async findProductById(id: number): Promise<ProductType | null> {
     const product = products.find((p) => p.id === id);
-    return product;
+    if (product) {
+      return product;
+    } else {
+      return null;
+    }
   },
 
-  createProduct(title: string) {
+  async createProduct(title: string): Promise<ProductType> {
     const newProduct = {
       id: +new Date(),
       title: title,
@@ -27,7 +36,7 @@ export const productsRepository = {
     return newProduct;
   },
 
-  updateProduct(id: number, title: string) {
+  async updateProduct(id: number, title: string): Promise<boolean> {
     let product = products.find((p) => p.id === id);
     if (product) {
       product.title = title;
@@ -37,7 +46,7 @@ export const productsRepository = {
     }
   },
 
-  deleteProduct(id: number) {
+  async deleteProduct(id: number): Promise<boolean> {
     for (let i = 0; i < products.length; i++) {
       if (products[i].id === id) {
         products.splice(i, 1);

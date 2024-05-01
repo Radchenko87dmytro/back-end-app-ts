@@ -41,7 +41,7 @@ app.use(bodyParser());
 const corsMiddleware = cors();
 app.use(corsMiddleware);
 
-export const jsonBodyMiddleware = express.json();
+export const jsonBodyMiddleware = bodyParser.json();
 
 app.use(jsonBodyMiddleware);
 
